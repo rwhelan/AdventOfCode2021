@@ -30,15 +30,12 @@ func ReadInts(data [][]byte) ([]int, error) {
 }
 
 func problemOne(ints []int) int {
-	currentValue := ints[0]
 	increases := 0
 
 	for i := 1; i < len(ints); i++ {
-		if ints[i] > currentValue {
+		if ints[i] > ints[i-1] {
 			increases++
 		}
-
-		currentValue = ints[i]
 	}
 
 	return increases
