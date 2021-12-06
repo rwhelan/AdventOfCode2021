@@ -7,30 +7,6 @@ import (
 	"strconv"
 )
 
-type Submarine struct {
-	X, Y int
-}
-
-func (s *Submarine) MoveUp(steps int) *Submarine {
-	s.Y -= steps
-	return s
-}
-
-func (s *Submarine) MoveDown(steps int) *Submarine {
-	s.Y += steps
-	return s
-}
-
-func (s *Submarine) MoveForward(steps int) *Submarine {
-	s.X += steps
-	return s
-}
-
-func (s *Submarine) MoveBack(steps int) *Submarine {
-	s.X -= steps
-	return s
-}
-
 func ReadLines(filename string) ([][]byte, error) {
 	rawInput, err := ioutil.ReadFile(filename)
 	if err != nil {
@@ -47,7 +23,8 @@ func main() {
 		panic(err)
 	}
 
-	sub := &Submarine{}
+	subOne := &SubmarineOne{}
+	subTwo := &SubmarineTwo{}
 
 	for _, r := range rows {
 		inst := bytes.Split(r, []byte{' '})
@@ -58,13 +35,17 @@ func main() {
 
 		switch string(inst[0]) {
 		case "forward":
-			sub.MoveForward(value)
+			subOne.MoveForward(value)
+			subTwo.MoveForward(value)
 		case "down":
-			sub.MoveDown(value)
+			subOne.MoveDown(value)
+			subTwo.MoveDown(value)
 		case "up":
-			sub.MoveUp(value)
+			subOne.MoveUp(value)
+			subTwo.MoveUp(value)
 		}
 	}
 
-	fmt.Println("Puzzle One:", sub.X*sub.Y)
+	fmt.Println("Puzzle One:", subOne.X*subOne.Y)
+	fmt.Println("Puzzle Two:", subTwo.X*subTwo.Y)
 }
