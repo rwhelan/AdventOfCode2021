@@ -51,6 +51,77 @@ func problemOne(ints []int) int {
 	return gamma * (gamma ^ 4095)
 }
 
+func problemTwo(ints []int) int {
+	mostCommon := func(ints []int, pos int) int {
+		ones, zeros := 0, 0
+		for _, row := range ints {
+			if (row>>pos)&1 == 1 {
+				ones++
+			} else {
+				zeros++
+			}
+		}
+
+		if ones >= zeros {
+			return 1
+		}
+
+		return 0
+	}
+
+	leastCommon := func(ints []int, pos int) int {
+		mc := mostCommon(ints, pos)
+
+		if mc == 1 {
+			return 0
+		}
+
+		return 1
+	}
+
+	filter := func(ints []int, pos int, val int) []int {
+		resp := make([]int, 0)
+
+		for _, row := range ints {
+			if (row>>pos)&1 == val {
+				resp = append(resp, row)
+			}
+		}
+
+		return resp
+	}
+
+	oxygenGenRating := func() int {
+		list := filter(ints, 11, mostCommon(ints, 11))
+		for i := 10; i >= 0; i-- {
+			mc := mostCommon(list, i)
+
+			list = filter(list, i, mc)
+			if len(list) == 1 {
+				return list[0]
+			}
+		}
+
+		panic("End Of List")
+	}
+
+	c02scrubber := func() int {
+		list := filter(ints, 11, leastCommon(ints, 11))
+		for i := 10; i >= 0; i-- {
+			lc := leastCommon(list, i)
+
+			list = filter(list, i, lc)
+			if len(list) == 1 {
+				return list[0]
+			}
+		}
+
+		panic("End Of List")
+	}
+
+	return oxygenGenRating() * c02scrubber()
+}
+
 func main() {
 	rows, err := ReadLines("input")
 	if err != nil {
@@ -63,4 +134,5 @@ func main() {
 	}
 
 	fmt.Println("Problem One:", problemOne(ints))
+	fmt.Println("Problem Two:", problemTwo(ints))
 }
