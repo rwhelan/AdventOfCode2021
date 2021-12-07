@@ -12,8 +12,9 @@ type Space struct {
 }
 
 type Board struct {
-	spaces [5][5]*Space
-	idx    map[int]*Space
+	spaces  [5][5]*Space
+	idx     map[int]*Space
+	histroy []int
 }
 
 func ParseBoard(input []byte) *Board {
