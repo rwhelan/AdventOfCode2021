@@ -189,5 +189,31 @@ func main() {
 		panic(err)
 	}
 
-	problemOne(draws, boards)
+	boardScore := func(b *Board) int {
+		return b.histroy[len(b.histroy)-1] * IntSum(b.UnmarkedNumbers())
+	}
+
+	boardsInWinningOrder := make([]*Board, 0)
+
+	boardAlreadyWon := func(b *Board) bool {
+		for _, winner := range boardsInWinningOrder {
+			if b == winner {
+				return true
+			}
+		}
+
+		return false
+	}
+
+	for _, d := range draws {
+		for _, b := range boards {
+			b.EvalDraw(d)
+			if b.IsWinner() && !boardAlreadyWon(b) {
+				boardsInWinningOrder = append(boardsInWinningOrder, b)
+			}
+		}
+	}
+
+	fmt.Println("Problem One:", boardScore(boardsInWinningOrder[0]))
+	fmt.Println("Problem Two:", boardScore(boardsInWinningOrder[len(boardsInWinningOrder)-1]))
 }
