@@ -168,21 +168,6 @@ func ParseInput(filename string) ([]int, []*Board, error) {
 	return draws, boards, nil
 }
 
-func problemOne(draws []int, boards []*Board) {
-	for _, d := range draws {
-		for _, b := range boards {
-			b.EvalDraw(d)
-			if b.IsWinner() {
-				fmt.Println(
-					"Problem One:",
-					b.histroy[len(b.histroy)-1]*IntSum(b.UnmarkedNumbers()),
-				)
-				return
-			}
-		}
-	}
-}
-
 func main() {
 	draws, boards, err := ParseInput("input")
 	if err != nil {
