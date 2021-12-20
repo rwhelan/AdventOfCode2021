@@ -181,16 +181,39 @@ func LoadGrid(inputfile string) (grid, error) {
 	return resp, nil
 }
 
-func main() {
-	g, err := LoadGrid("input")
-	if err != nil {
-		panic(err)
-	}
-
+func problemOne(g grid) int {
 	totalFlashes := 0
 	for i := 0; i < 100; i++ {
 		totalFlashes += g.Step()
 	}
 
-	fmt.Println(totalFlashes)
+	return totalFlashes
+}
+
+func problemTwo(g grid) int {
+	step := 0
+	for flashCount := -1; flashCount != 100; step++ {
+		flashCount = g.Step()
+	}
+
+	return step
+}
+
+func main() {
+	inputFilename := "input"
+
+	g, err := LoadGrid(inputFilename)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Problem One:", problemOne(g))
+
+	// recreate grid
+	g, err = LoadGrid(inputFilename)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Problem Two:", problemTwo(g))
 }
