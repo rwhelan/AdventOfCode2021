@@ -9,10 +9,10 @@ import (
 )
 
 type point struct {
-	x, y              int
-	value, pcost, pqi int
-	visited, finalp   bool
-	prev              *point
+	x, y                  int
+	value, pcost, pqi     int
+	visited, wall, finalp bool
+	prev                  *point
 }
 
 type PointList []*point
@@ -39,11 +39,17 @@ func (g *grid) maxXY() (int, int) {
 func (g grid) Print() string {
 	resp := strings.Builder{}
 
+	// resp.WriteString("\033[H\033[2J")
 	maxX, maxY := g.maxXY()
 
 	for y := 0; y <= maxY; y++ {
 		for x := 0; x <= maxX; x++ {
 			p := g.GetPoint(x, y)
+
+			if p.wall {
+				resp.WriteString("\033[32m#\033[0m")
+				continue
+			}
 			if p.finalp {
 				resp.WriteString(
 					fmt.Sprintf("\033[31m%d\033[0m", p.value),
@@ -113,18 +119,29 @@ func LoadGrid(gridData []byte) grid {
 	for y, rowBytes := range bytes.Split(gridData, []byte{'\n'}) {
 		resp[y] = make(row)
 		for x, v := range rowBytes {
-			value, err := strconv.Atoi(string(v))
-			if err != nil {
-				panic(err)
-			}
+			stringValue := string(v)
 
-			resp[y][x] = &point{
-				x:       x,
-				y:       y,
-				value:   value,
-				visited: false,
-				pcost:   4294967296,
-				pqi:     -1,
+			if stringValue == "#" {
+				resp[y][x] = &point{
+					x:    x,
+					y:    y,
+					wall: true,
+				}
+			} else {
+				value, err := strconv.Atoi(string(v))
+				if err != nil {
+					panic(err)
+				}
+
+				resp[y][x] = &point{
+					x:       x,
+					y:       y,
+					value:   value,
+					visited: false,
+					wall:    false,
+					pcost:   4294967296,
+					pqi:     -1,
+				}
 			}
 		}
 
@@ -133,13 +150,66 @@ func LoadGrid(gridData []byte) grid {
 	return resp
 }
 
-func main() {
-	rawInput, err := ioutil.ReadFile("input")
-	if err != nil {
-		panic(err)
+// problem 2 grid
+func expandGrid(b []byte, size int) []byte {
+	rows := bytes.Split(b, []byte("\n"))
+	h := len(rows)
+	w := len(rows[0])
+
+	ref := make([][]int, len(rows))
+
+	// convert []byte table into matrix
+	for y, row := range rows {
+		ref[y] = make([]int, len(row))
+		for x, v := range row {
+			value, err := strconv.Atoi(string(v))
+			if err != nil {
+				panic(err)
+			}
+
+			ref[y][x] = value
+		}
 	}
 
-	g := LoadGrid(rawInput)
+	//
+	output := make([][]int, h*size)
+	for i := range output {
+		output[i] = make([]int, w*size)
+	}
+
+	// down left side
+	for i := 0; i < size; i++ {
+		for y, row := range ref {
+			for x := range row {
+				output[y+(i*h)][x] = (ref[y][x]+i-1)%9 + 1
+			}
+		}
+	}
+
+	// across
+	for i := 0; i < size; i++ {
+		for j := 0; j < size; j++ {
+			for y, row := range ref {
+				for x := range row {
+					output[y+(j*h)][x+(i*w)] = (output[y+(j*h)][x]+i-1)%9 + 1
+				}
+			}
+		}
+	}
+
+	bldr := strings.Builder{}
+	for _, row := range output {
+		for _, v := range row {
+			bldr.WriteString(strconv.Itoa(v))
+		}
+		bldr.WriteString("\n")
+	}
+
+	resp := bldr.String()
+	return []byte(resp[:len(resp)-1])
+}
+
+func computeGrid(g *grid) int {
 	pq := make(pqueue, 0, 1000)
 
 	p := g.GetPoint(0, 0)
@@ -156,7 +226,6 @@ func main() {
 			break
 		}
 		p.visited = true
-		// fmt.Println(g.Print())
 
 		for _, np := range g.GetUnvisitedNeighbors(p) {
 			if np.pqi == -1 {
@@ -170,8 +239,6 @@ func main() {
 				np.prev = p
 			}
 		}
-
-		// time.Sleep(time.Millisecond * 10)
 	}
 
 	pathCost := p.pcost
@@ -180,8 +247,21 @@ func main() {
 		p = p.prev
 	}
 
-	fmt.Println(g.Print())
-	fmt.Println(pathCost)
+	return pathCost
+}
+func main() {
+	rawInput, err := ioutil.ReadFile("input")
+	if err != nil {
+		panic(err)
+	}
+
+	pbl1Input := LoadGrid(rawInput)
+	pbl2Input := LoadGrid(expandGrid(rawInput, 5))
+
+	fmt.Println("Problem One:", computeGrid(&pbl1Input))
+	fmt.Println("Problem Two:", computeGrid(&pbl2Input))
+
+	// fmt.Println(pbl1Input.Print())
 
 }
 
