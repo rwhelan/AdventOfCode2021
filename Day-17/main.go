@@ -1,10 +1,25 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Probe struct {
-	xv, yv, x, y int
-	path         [][]int
+	xv, yv   int
+	ixv, iyv int
+	x, y     int
+	path     [][]int
+}
+
+func NewProbe(xv, yv int) *Probe {
+	return &Probe{
+		xv:  xv,
+		ixv: xv,
+		yv:  yv,
+		iyv: yv,
+		x:   0,
+		y:   0,
+	}
 }
 
 type Target struct {
@@ -54,9 +69,9 @@ func (p *Probe) IsBelow(t *Target) bool {
 	return p.y < t.yBottom
 }
 
-func FindX(givenYV int, t *Target) *Probe {
+func SearchDownForX(givenYV int, t *Target) *Probe {
 	for xv := 1; ; xv++ {
-		p := &Probe{yv: givenYV, xv: xv}
+		p := NewProbe(xv, givenYV)
 		if p.HitsTarget(t) {
 			return p
 		}
@@ -67,10 +82,20 @@ func FindX(givenYV int, t *Target) *Probe {
 	}
 }
 
+func SearchUpForX(t *Target) *Probe {
+	for yv := -1000; ; yv++ {
+		for xv := 0; xv < 1000; xv++ {
+			p := NewProbe(xv, yv)
+			if p.HitsTarget(t) {
+				return p
+			}
+		}
+	}
+}
+
 func FindMaxY(t *Target) *Probe {
 	for yv := 1000; ; yv-- {
-		// fmt.Println("Trying:", yv)
-		if p := FindX(yv, t); p != nil {
+		if p := SearchDownForX(yv, t); p != nil {
 			return p
 		}
 	}
@@ -87,9 +112,26 @@ func MaxY(i [][]int) int {
 	return max
 }
 
-func main() {
-	// target area: x=139..187, y=-148..-89
+func FindAll(t *Target) [][]int {
+	resp := make([][]int, 0)
 
+	MaxY := FindMaxY(t).iyv
+	MinY := SearchUpForX(t).iyv
+
+	for yv := MinY; yv <= MaxY; yv++ {
+		for xv := 0; xv <= 300; xv++ {
+			p := NewProbe(xv, yv)
+			if p.HitsTarget(t) {
+				resp = append(resp, []int{xv, yv})
+			}
+		}
+	}
+
+	return resp
+}
+
+func main() {
+	// Sample Target
 	// target := &Target{
 	// 	xLeft:   20,
 	// 	xRight:  30,
@@ -97,6 +139,7 @@ func main() {
 	// 	yBottom: -10,
 	// }
 
+	// target area: x=139..187, y=-148..-89
 	target := &Target{
 		xLeft:   139,
 		xRight:  187,
@@ -106,4 +149,7 @@ func main() {
 
 	p := FindMaxY(target)
 	fmt.Println("Problem One:", MaxY(p.path))
+
+	v := FindAll(target)
+	fmt.Println("Problem Two:", len(v))
 }
