@@ -69,15 +69,13 @@ func (p *Probe) IsBelow(t *Target) bool {
 	return p.y < t.yBottom
 }
 
-func SearchDownForX(givenYV int, t *Target) *Probe {
-	for xv := 1; ; xv++ {
-		p := NewProbe(xv, givenYV)
-		if p.HitsTarget(t) {
-			return p
-		}
-
-		if p.IsToFar(t) {
-			return nil
+func SearchDownForX(t *Target) *Probe {
+	for yv := 1000; ; yv-- {
+		for xv := 1; xv < 1000; xv++ {
+			p := NewProbe(xv, yv)
+			if p.HitsTarget(t) {
+				return p
+			}
 		}
 	}
 }
@@ -89,14 +87,6 @@ func SearchUpForX(t *Target) *Probe {
 			if p.HitsTarget(t) {
 				return p
 			}
-		}
-	}
-}
-
-func FindMaxY(t *Target) *Probe {
-	for yv := 1000; ; yv-- {
-		if p := SearchDownForX(yv, t); p != nil {
-			return p
 		}
 	}
 }
@@ -115,7 +105,7 @@ func MaxY(i [][]int) int {
 func FindAll(t *Target) [][]int {
 	resp := make([][]int, 0)
 
-	MaxY := FindMaxY(t).iyv
+	MaxY := SearchDownForX(t).iyv
 	MinY := SearchUpForX(t).iyv
 
 	for yv := MinY; yv <= MaxY; yv++ {
@@ -147,7 +137,7 @@ func main() {
 		yBottom: -148,
 	}
 
-	p := FindMaxY(target)
+	p := SearchDownForX(target)
 	fmt.Println("Problem One:", MaxY(p.path))
 
 	v := FindAll(target)
