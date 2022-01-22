@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 )
@@ -132,6 +133,17 @@ func Explode(n *Node) {
 	n.LeafValue = 0
 }
 
+func Split(n *Node) {
+	leftVal := int(math.Floor(float64(n.LeafValue) / 2))
+	rightVal := int(math.Ceil(float64(n.LeafValue) / 2))
+
+	n.Left = &Node{Leaf: true, LeafValue: leftVal}
+	n.Right = &Node{Leaf: true, LeafValue: rightVal}
+
+	n.Leaf = false
+	n.LeafValue = 0
+}
+
 func ParseNodes(bs *ByteStream, depth int, parent *Node) *Node {
 	resp := &Node{
 		Depth:  depth,
@@ -166,21 +178,19 @@ func ParseNodes(bs *ByteStream, depth int, parent *Node) *Node {
 
 func main() {
 	// b := []byte("[[54,8],20]")
-	b := []byte("[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]")
 
+	//b := []byte("[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]")
+	// n := ParseNodes(NewByteStream(b), 0, nil)
+
+	// fmt.Println(n.Print())
+	// Explode(n.Left.Right.Right.Right)
+	// fmt.Println(n.Print())
+
+	b := []byte("[[[[0,7],4],[[7,8],[0,13]]],[1,1]]")
 	n := ParseNodes(NewByteStream(b), 0, nil)
 
 	fmt.Println(n.Print())
-	Explode(n.Left.Right.Right.Right)
+	Split(n.Left.Right.Right.Right)
 	fmt.Println(n.Print())
-	// fmt.Printf("%+v %p\n", n.Left.Right.Right.Right, n.Left.Right.Right.Right)
-
-	// fmt.Printf("%+v\n", n.Left.Right.Right.Right.Left)
-	// fmt.Printf("%+v\n", n.Left.Right.Right.Right.Right)
-
-	// fmt.Println("==========")
-
-	// n = findNextRightNode(n.Left.Right.Right.Right)
-	// fmt.Printf("%+v\n", n)
 
 }
