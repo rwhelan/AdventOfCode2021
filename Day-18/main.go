@@ -62,6 +62,71 @@ func (n *Node) Print() string {
 	return fmt.Sprintf("[%s,%s]", n.Left.Print(), n.Right.Print())
 }
 
+func Add(n, o *Node) *Node {
+	return &Node{
+		Left:  n,
+		Right: o,
+	}
+}
+
+func Walk(n *Node, f func(*Node) bool) bool {
+	if f(n) {
+		return true
+	}
+
+	if n.Left != nil {
+		if Walk(n.Left, f) {
+			return true
+		}
+	}
+
+	if n.Right != nil {
+		if Walk(n.Right, f) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func Process(n *Node) {
+	fmt.Println(n.Print())
+	exp := func(n *Node) bool {
+		if n.Depth == 4 && !n.Leaf {
+			Explode(n)
+			return true
+		}
+		return false
+	}
+
+	spl := func(n *Node) bool {
+		if n.Leaf && n.LeafValue >= 10 {
+			Split(n)
+			return true
+		}
+		return false
+	}
+
+	subProcess := func(n *Node) bool {
+		exploded, splited := false, false
+		fmt.Println("Sub")
+		for Walk(n, exp) {
+			fmt.Println("EXP")
+			exploded = true
+		}
+
+		for Walk(n, spl) {
+			fmt.Println("SPL")
+			splited = true
+		}
+
+		return exploded || splited
+	}
+
+	for subProcess(n) {
+	}
+}
+
 func readNum(bs *ByteStream) int {
 	v := strings.Builder{}
 	for {
@@ -86,11 +151,18 @@ func readNum(bs *ByteStream) int {
 
 func findNextLeftNode(n *Node) *Node {
 	currentNode := n
-	for ; currentNode.Parent.Left == currentNode; currentNode = currentNode.Parent {
+	for {
 		if currentNode.Parent == nil {
 			return nil
 		}
+
+		if currentNode.Parent.Left != currentNode {
+			break
+		}
+
+		currentNode = currentNode.Parent
 	}
+
 	currentNode = currentNode.Parent.Left
 
 	for ; !currentNode.Leaf; currentNode = currentNode.Right {
@@ -101,11 +173,18 @@ func findNextLeftNode(n *Node) *Node {
 
 func findNextRightNode(n *Node) *Node {
 	currentNode := n
-	for ; currentNode.Parent.Right == currentNode; currentNode = currentNode.Parent {
+	for {
 		if currentNode.Parent == nil {
 			return nil
 		}
+
+		if currentNode.Parent.Right != currentNode {
+			break
+		}
+
+		currentNode = currentNode.Parent
 	}
+
 	currentNode = currentNode.Parent.Right
 
 	for ; !currentNode.Leaf; currentNode = currentNode.Left {
@@ -177,20 +256,40 @@ func ParseNodes(bs *ByteStream, depth int, parent *Node) *Node {
 }
 
 func main() {
-	// b := []byte("[[54,8],20]")
 
-	//b := []byte("[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]")
-	// n := ParseNodes(NewByteStream(b), 0, nil)
+	root := ParseNodes(NewByteStream([]byte("[1,1]")), 0, nil)
+	two := ParseNodes(NewByteStream([]byte("[2,2]")), 0, nil)
+	three := ParseNodes(NewByteStream([]byte("[3,3]")), 0, nil)
+	four := ParseNodes(NewByteStream([]byte("[4,4]")), 0, nil)
+	five := ParseNodes(NewByteStream([]byte("[5,5]")), 0, nil)
+	six := ParseNodes(NewByteStream([]byte("[6,6]")), 0, nil)
 
+	root = Add(root, two)
+	Process(root)
+
+	root = Add(root, three)
+	Process(root)
+
+	root = Add(root, four)
+	Process(root)
+
+	root = Add(root, five)
+	Process(root)
+
+	root = Add(root, six)
+	Process(root)
+
+	// fmt.Println(root.Print())
+
+	// b := []byte("[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]")
+	// n := ParseNodes(NewByteStream([]byte(b)), 0, nil)
+
+	// Process(n)
 	// fmt.Println(n.Print())
-	// Explode(n.Left.Right.Right.Right)
+
+	// b := []byte("[[[[[1,1],[2,2]],[3,3]],[4,4]],[5,5]]")
+	// n := ParseNodes(NewByteStream([]byte(b)), 0, nil)
+
+	// Process(n)
 	// fmt.Println(n.Print())
-
-	b := []byte("[[[[0,7],4],[[7,8],[0,13]]],[1,1]]")
-	n := ParseNodes(NewByteStream(b), 0, nil)
-
-	fmt.Println(n.Print())
-	Split(n.Left.Right.Right.Right)
-	fmt.Println(n.Print())
-
 }
