@@ -94,10 +94,6 @@ func Add(n, o *Node) *Node {
 }
 
 func Walk(n *Node, f func(*Node) bool) bool {
-	if f(n) {
-		return true
-	}
-
 	if n.Left != nil {
 		if Walk(n.Left, f) {
 			return true
@@ -110,12 +106,13 @@ func Walk(n *Node, f func(*Node) bool) bool {
 		}
 	}
 
-	return false
+	return f(n)
 }
 
 func Process(n *Node) {
 	exp := func(n *Node) bool {
 		if n.Depth() == 4 && !n.Leaf {
+			fmt.Println("Eploding: ", n.Print())
 			Explode(n)
 			return true
 		}
@@ -290,15 +287,63 @@ func main() {
 	// 	panic(err)
 	// }
 
+	// one := ParseNodes(NewByteStream([]byte("[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]")), 0, nil)
+	// two := ParseNodes(NewByteStream([]byte("[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]")), 0, nil)
+	// fmt.Println(one.Print())
+	// fmt.Println(two.Print())
+	// f := Add(one, two)
+	// fmt.Println(f.Print())
+	// Process(f)
+	// fmt.Println("=====")
+	// fmt.Println("Answer:   ", f.Print())
+	// fmt.Println("Should be: [[[[4,0],[5,4]],[[7,7],[6,0]]],[[8,[7,7]],[[7,9],[5,0]]]]")
+
+	// one := ParseNodes(NewByteStream([]byte("[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]")), 0, nil)
+	// two := ParseNodes(NewByteStream([]byte("[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]")), 0, nil)
+	// fmt.Println(one.Print())
+	// fmt.Println(two.Print())
+	// f := Add(one, two)
+	// exp := func(n *Node) bool {
+	// 	if n.Depth() == 4 && !n.Leaf {
+	// 		Explode(n)
+	// 		return true
+	// 	}
+	// 	return false
+	// }
+	// spl := func(n *Node) bool {
+	// 	if n.Leaf && n.LeafValue >= 10 {
+	// 		Split(n)
+	// 		return true
+	// 	}
+	// 	return false
+	// }
+	// for i := 0; i < 100; i++ {
+	// 	for j := 0; j < 50; j++ {
+	// 		Walk(f, exp)
+	// 		// fmt.Println(f.Print())
+	// 	}
+	// 	for j := 0; j < 50; j++ {
+	// 		Walk(f, spl)
+	// 		// fmt.Println(f.Print())
+	// 	}
+	// }
+	// fmt.Println(f.Print())
+
 	one := ParseNodes(NewByteStream([]byte("[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]")), 0, nil)
 	two := ParseNodes(NewByteStream([]byte("[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]")), 0, nil)
-
-	fmt.Println(one.Print())
-	fmt.Println(two.Print())
 	f := Add(one, two)
+
 	fmt.Println(f.Print())
+
+	// Walk(f, func(n *Node) bool {
+	// 	if n.Leaf {
+	// 		fmt.Print(n.LeafValue)
+	// 	}
+
+	// 	return false
+	// })
+
 	Process(f)
-	fmt.Println("=====")
-	fmt.Println("Answer:   ", f.Print())
-	fmt.Println("Should be: [[[[4,0],[5,4]],[[7,7],[6,0]]],[[8,[7,7]],[[7,9],[5,0]]]]")
+	fmt.Println(f.Print())
+
 }
