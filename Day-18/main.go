@@ -51,7 +51,6 @@ type Node struct {
 	Left, Right *Node
 	Leaf        bool
 	LeafValue   int
-	Depth       int
 }
 
 func (n *Node) Print() string {
@@ -62,11 +61,26 @@ func (n *Node) Print() string {
 	return fmt.Sprintf("[%s,%s]", n.Left.Print(), n.Right.Print())
 }
 
+func (n *Node) Depth() int {
+	c := n
+	depth := 0
+	for ; c.Parent != nil; c = c.Parent {
+		depth++
+	}
+
+	return depth
+}
+
 func Add(n, o *Node) *Node {
-	return &Node{
+	resp := &Node{
 		Left:  n,
 		Right: o,
 	}
+
+	n.Parent = resp
+	o.Parent = resp
+
+	return resp
 }
 
 func Walk(n *Node, f func(*Node) bool) bool {
@@ -90,9 +104,8 @@ func Walk(n *Node, f func(*Node) bool) bool {
 }
 
 func Process(n *Node) {
-	fmt.Println(n.Print())
 	exp := func(n *Node) bool {
-		if n.Depth == 4 && !n.Leaf {
+		if n.Depth() == 4 && !n.Leaf {
 			Explode(n)
 			return true
 		}
@@ -109,14 +122,11 @@ func Process(n *Node) {
 
 	subProcess := func(n *Node) bool {
 		exploded, splited := false, false
-		fmt.Println("Sub")
 		for Walk(n, exp) {
-			fmt.Println("EXP")
 			exploded = true
 		}
 
 		for Walk(n, spl) {
-			fmt.Println("SPL")
 			splited = true
 		}
 
@@ -225,7 +235,6 @@ func Split(n *Node) {
 
 func ParseNodes(bs *ByteStream, depth int, parent *Node) *Node {
 	resp := &Node{
-		Depth:  depth,
 		Parent: parent,
 	}
 
@@ -265,21 +274,21 @@ func main() {
 	six := ParseNodes(NewByteStream([]byte("[6,6]")), 0, nil)
 
 	root = Add(root, two)
-	Process(root)
+	// Process(root)
 
 	root = Add(root, three)
-	Process(root)
+	// Process(root)
 
 	root = Add(root, four)
-	Process(root)
+	// Process(root)
 
 	root = Add(root, five)
-	Process(root)
+	// Process(root)
 
 	root = Add(root, six)
 	Process(root)
 
-	// fmt.Println(root.Print())
+	fmt.Println(root.Print())
 
 	// b := []byte("[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]")
 	// n := ParseNodes(NewByteStream([]byte(b)), 0, nil)
