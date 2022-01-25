@@ -112,7 +112,11 @@ func Walk(n *Node, f func(*Node) bool) bool {
 func Process(n *Node) {
 	exp := func(n *Node) bool {
 		if n.Depth() == 4 && !n.Leaf {
+			fmt.Println("Exploding: ", n.Print())
+			fmt.Println("   Before: ", rootNode.Print())
 			Explode(n)
+			fmt.Println("   After:  ", rootNode.Print())
+			fmt.Println()
 			return true
 		}
 		return false
@@ -120,7 +124,11 @@ func Process(n *Node) {
 
 	spl := func(n *Node) bool {
 		if n.Leaf && n.LeafValue >= 10 {
+			fmt.Println("Splitting: ", n.Print())
+			fmt.Println("   Before: ", rootNode.Print())
 			Split(n)
+			fmt.Println("    After: ", rootNode.Print())
+			fmt.Println()
 			return true
 		}
 		return false
@@ -280,25 +288,27 @@ func ReadLines(filename string) ([][]byte, error) {
 	return bytes.Split(rawInput, []byte("\n")), nil
 }
 
-func main() {
-	rows, err := ReadLines("test")
-	if err != nil {
-		panic(err)
-	}
-	root := ParseNodes(NewByteStream(rows[0]), nil)
-	for _, r := range rows[1:] {
-		root = Add(root, ParseNodes(NewByteStream(r), nil))
-		Process(root)
-		Process(root)
-	}
-	fmt.Println(root.Print())
+var rootNode *Node
 
-	// one := ParseNum([]byte("[[[[4,0],[5,4]],[[7,7],[6,0]]],[[8,[7,7]],[[7,9],[5,0]]]]"))
-	// two := ParseNum([]byte("[[2,[[0,8],[3,4]]],[[[6,7],1],[7,[1,6]]]]"))
-	// root := Add(one, two)
-	// Process(root)
-	// fmt.Println("Answer:   ", root.Print())
-	// fmt.Println("Should Be: [[[[6,7],[6,7]],[[7,7],[0,7]]],[[[8,7],[7,7]],[[8,8],[8,0]]]]")
+func main() {
+	// rows, err := ReadLines("test")
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// root := ParseNodes(NewByteStream(rows[0]), nil)
+	// for _, r := range rows[1:] {
+	// 	root = Add(root, ParseNodes(NewByteStream(r), nil))
+	// 	Process(root)
+	// 	Process(root)
+	// }
+	// fmt.Println(root.Print())
+
+	one := ParseNum([]byte("[[[[4,0],[5,4]],[[7,7],[6,0]]],[[8,[7,7]],[[7,9],[5,0]]]]"))
+	two := ParseNum([]byte("[[2,[[0,8],[3,4]]],[[[6,7],1],[7,[1,6]]]]"))
+	rootNode = Add(one, two)
+	Process(rootNode)
+	fmt.Println("Answer:   ", rootNode.Print())
+	fmt.Println("Should Be: [[[[6,7],[6,7]],[[7,7],[0,7]]],[[[8,7],[7,7]],[[8,8],[8,0]]]]")
 
 	// root := ParseNum([]byte("[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]"))
 	// Process(root)
