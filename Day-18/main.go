@@ -298,5 +298,7 @@ func main() {
 	f := Add(one, two)
 	fmt.Println(f.Print())
 	Process(f)
-	fmt.Println(f.Print())
+	fmt.Println("=====")
+	fmt.Println("Answer:   ", f.Print())
+	fmt.Println("Should be: [[[[4,0],[5,4]],[[7,7],[6,0]]],[[8,[7,7]],[[7,9],[5,0]]]]")
 }
