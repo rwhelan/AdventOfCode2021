@@ -111,7 +111,7 @@ func Walk(n *Node, f func(*Node) bool) bool {
 
 func Process(n *Node) {
 	exp := func(n *Node) bool {
-		if n.Depth() == 4 && !n.Leaf {
+		if n.Depth() >= 4 && !n.Leaf {
 			fmt.Println("Exploding: ", n.Print())
 			fmt.Println("   Before: ", rootNode.Print())
 			Explode(n)
@@ -123,7 +123,7 @@ func Process(n *Node) {
 	}
 
 	spl := func(n *Node) bool {
-		if n.Leaf && n.LeafValue >= 10 {
+		if n.Leaf && n.LeafValue > 9 {
 			fmt.Println("Splitting: ", n.Print())
 			fmt.Println("   Before: ", rootNode.Print())
 			Split(n)
@@ -135,12 +135,24 @@ func Process(n *Node) {
 	}
 
 	subProcess := func(n *Node) bool {
-		exploded := false
-		for Walk(n, exp) {
-			exploded = true
+		exploded := Walk(n, exp)
+		splited := Walk(n, spl)
+		if exploded {
+			return true
 		}
 
-		return Walk(n, spl) || exploded
+		// splited := Walk(n, spl)
+
+		if splited {
+			return true
+		}
+
+		return false
+
+		// exploded := Walk(n, exp)
+		// splited := Walk(n, spl)
+
+		//return exploded || splited
 	}
 
 	for subProcess(n) {
