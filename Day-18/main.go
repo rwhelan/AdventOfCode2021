@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"math"
 	"strconv"
 	"strings"
@@ -51,6 +53,14 @@ type Node struct {
 	Left, Right *Node
 	Leaf        bool
 	LeafValue   int
+}
+
+func (n *Node) Magnitude() int {
+	if n.Leaf {
+		return n.LeafValue
+	}
+
+	return 3*n.Left.Magnitude() + 2*n.Right.Magnitude()
 }
 
 func (n *Node) Print() string {
@@ -264,41 +274,29 @@ func ParseNodes(bs *ByteStream, depth int, parent *Node) *Node {
 	}
 }
 
+func ReadLines(filename string) ([][]byte, error) {
+	rawInput, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	rawInput = bytes.TrimRight(rawInput, "\n")
+	return bytes.Split(rawInput, []byte("\n")), nil
+}
+
 func main() {
+	// rows, err := ReadLines("test")
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	root := ParseNodes(NewByteStream([]byte("[1,1]")), 0, nil)
-	two := ParseNodes(NewByteStream([]byte("[2,2]")), 0, nil)
-	three := ParseNodes(NewByteStream([]byte("[3,3]")), 0, nil)
-	four := ParseNodes(NewByteStream([]byte("[4,4]")), 0, nil)
-	five := ParseNodes(NewByteStream([]byte("[5,5]")), 0, nil)
-	six := ParseNodes(NewByteStream([]byte("[6,6]")), 0, nil)
+	one := ParseNodes(NewByteStream([]byte("[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]")), 0, nil)
+	two := ParseNodes(NewByteStream([]byte("[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]")), 0, nil)
 
-	root = Add(root, two)
-	// Process(root)
-
-	root = Add(root, three)
-	// Process(root)
-
-	root = Add(root, four)
-	// Process(root)
-
-	root = Add(root, five)
-	// Process(root)
-
-	root = Add(root, six)
-	Process(root)
-
-	fmt.Println(root.Print())
-
-	// b := []byte("[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]")
-	// n := ParseNodes(NewByteStream([]byte(b)), 0, nil)
-
-	// Process(n)
-	// fmt.Println(n.Print())
-
-	// b := []byte("[[[[[1,1],[2,2]],[3,3]],[4,4]],[5,5]]")
-	// n := ParseNodes(NewByteStream([]byte(b)), 0, nil)
-
-	// Process(n)
-	// fmt.Println(n.Print())
+	fmt.Println(one.Print())
+	fmt.Println(two.Print())
+	f := Add(one, two)
+	fmt.Println(f.Print())
+	Process(f)
+	fmt.Println(f.Print())
 }
