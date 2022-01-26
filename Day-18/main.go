@@ -112,11 +112,11 @@ func Walk(n *Node, f func(*Node) bool) bool {
 func Process(n *Node) {
 	exp := func(n *Node) bool {
 		if n.Depth() >= 4 && !n.Leaf {
-			fmt.Println("Exploding: ", n.Print())
-			fmt.Println("   Before: ", rootNode.Print())
+			// fmt.Println("Exploding: ", n.Print())
+			// fmt.Println("   Before: ", rootNode.Print())
 			Explode(n)
-			fmt.Println("   After:  ", rootNode.Print())
-			fmt.Println()
+			// fmt.Println("   After:  ", rootNode.Print())
+			// fmt.Println()
 			return true
 		}
 		return false
@@ -124,38 +124,26 @@ func Process(n *Node) {
 
 	spl := func(n *Node) bool {
 		if n.Leaf && n.LeafValue > 9 {
-			fmt.Println("Splitting: ", n.Print())
-			fmt.Println("   Before: ", rootNode.Print())
+			// fmt.Println("Splitting: ", n.Print())
+			// fmt.Println("   Before: ", rootNode.Print())
 			Split(n)
-			fmt.Println("    After: ", rootNode.Print())
-			fmt.Println()
+			// fmt.Println("    After: ", rootNode.Print())
+			// fmt.Println()
 			return true
 		}
 		return false
 	}
 
-	subProcess := func(n *Node) bool {
-		exploded := Walk(n, exp)
-		splited := Walk(n, spl)
-		if exploded {
-			return true
+	for {
+		if Walk(n, exp) {
+			continue
 		}
 
-		// splited := Walk(n, spl)
-
-		if splited {
-			return true
+		if Walk(n, spl) {
+			continue
 		}
 
-		return false
-
-		// exploded := Walk(n, exp)
-		// splited := Walk(n, spl)
-
-		//return exploded || splited
-	}
-
-	for subProcess(n) {
+		break
 	}
 }
 
@@ -248,8 +236,8 @@ func Split(n *Node) {
 	leftVal := int(math.Floor(float64(n.LeafValue) / 2))
 	rightVal := int(math.Ceil(float64(n.LeafValue) / 2))
 
-	n.Left = &Node{Leaf: true, LeafValue: leftVal}
-	n.Right = &Node{Leaf: true, LeafValue: rightVal}
+	n.Left = &Node{Leaf: true, LeafValue: leftVal, Parent: n}
+	n.Right = &Node{Leaf: true, LeafValue: rightVal, Parent: n}
 
 	n.Leaf = false
 	n.LeafValue = 0
@@ -300,29 +288,19 @@ func ReadLines(filename string) ([][]byte, error) {
 	return bytes.Split(rawInput, []byte("\n")), nil
 }
 
-var rootNode *Node
-
 func main() {
-	// rows, err := ReadLines("test")
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// root := ParseNodes(NewByteStream(rows[0]), nil)
-	// for _, r := range rows[1:] {
-	// 	root = Add(root, ParseNodes(NewByteStream(r), nil))
-	// 	Process(root)
-	// 	Process(root)
-	// }
-	// fmt.Println(root.Print())
+	rows, err := ReadLines("input")
+	if err != nil {
+		panic(err)
+	}
 
-	one := ParseNum([]byte("[[[[4,0],[5,4]],[[7,7],[6,0]]],[[8,[7,7]],[[7,9],[5,0]]]]"))
-	two := ParseNum([]byte("[[2,[[0,8],[3,4]]],[[[6,7],1],[7,[1,6]]]]"))
-	rootNode = Add(one, two)
-	Process(rootNode)
-	fmt.Println("Answer:   ", rootNode.Print())
-	fmt.Println("Should Be: [[[[6,7],[6,7]],[[7,7],[0,7]]],[[[8,7],[7,7]],[[8,8],[8,0]]]]")
+	root := ParseNodes(NewByteStream(rows[0]), nil)
+	for _, r := range rows[1:] {
+		root = Add(root, ParseNodes(NewByteStream(r), nil))
+		Process(root)
+		Process(root)
+	}
 
-	// root := ParseNum([]byte("[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]"))
-	// Process(root)
-	// fmt.Println(root.Print())
+	fmt.Println("Problem One:", root.Magnitude())
+
 }
