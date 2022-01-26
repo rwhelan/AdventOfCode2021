@@ -112,11 +112,7 @@ func Walk(n *Node, f func(*Node) bool) bool {
 func Process(n *Node) {
 	exp := func(n *Node) bool {
 		if n.Depth() >= 4 && !n.Leaf {
-			// fmt.Println("Exploding: ", n.Print())
-			// fmt.Println("   Before: ", rootNode.Print())
 			Explode(n)
-			// fmt.Println("   After:  ", rootNode.Print())
-			// fmt.Println()
 			return true
 		}
 		return false
@@ -124,11 +120,7 @@ func Process(n *Node) {
 
 	spl := func(n *Node) bool {
 		if n.Leaf && n.LeafValue > 9 {
-			// fmt.Println("Splitting: ", n.Print())
-			// fmt.Println("   Before: ", rootNode.Print())
 			Split(n)
-			// fmt.Println("    After: ", rootNode.Print())
-			// fmt.Println()
 			return true
 		}
 		return false
@@ -263,12 +255,15 @@ func ParseNodes(bs *ByteStream, parent *Node) *Node {
 		case '[':
 			bs.Pop()
 			resp.Left = ParseNodes(bs, resp)
+
 		case ',':
 			bs.Pop()
 			resp.Right = ParseNodes(bs, resp)
-		default:
+
+		default: // Leaf Node Number
 			resp.Leaf = true
 			resp.LeafValue = readNum(bs)
+
 			return resp
 		}
 	}
@@ -294,13 +289,31 @@ func main() {
 		panic(err)
 	}
 
-	root := ParseNodes(NewByteStream(rows[0]), nil)
-	for _, r := range rows[1:] {
-		root = Add(root, ParseNodes(NewByteStream(r), nil))
-		Process(root)
+	numbers := make([]*Node, len(rows))
+	for i, r := range rows {
+		numbers[i] = ParseNum(r)
+	}
+
+	root := numbers[0]
+	for _, n := range numbers[1:] {
+		root = Add(root, n)
 		Process(root)
 	}
 
 	fmt.Println("Problem One:", root.Magnitude())
+
+	max := 0
+	for _, i := range rows {
+		for _, j := range rows {
+			n := Add(ParseNum(i), ParseNum(j))
+			Process(n)
+
+			if n.Magnitude() > max {
+				max = n.Magnitude()
+			}
+		}
+	}
+
+	fmt.Println("Problem Two:", max)
 
 }
