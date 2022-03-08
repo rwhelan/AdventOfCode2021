@@ -1,10 +1,8 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
-	"io/ioutil"
-	"strconv"
+	"math"
 )
 
 type Beacon struct {
@@ -17,79 +15,46 @@ type Scanner struct {
 	Beacons []*Beacon
 }
 
-func ParseScanner(b []byte) (*Scanner, error) {
-	rows := bytes.Split(b, []byte("\n"))
-	var err error
-	scanner := &Scanner{}
-	if rows[0][13] == ' ' {
-		if scanner.ID, err = strconv.Atoi(string(rows[0][12])); err != nil {
-			return nil, err
-		}
+func BeaconDist(one, two *Beacon) float64 {
+	xc := math.Pow(float64(two.X-one.X), 2)
+	yc := math.Pow(float64(two.Y-one.Y), 2)
+	zc := math.Pow(float64(two.Z-one.Z), 2)
 
-	} else {
-		if scanner.ID, err = strconv.Atoi(string(rows[0][12:14])); err != nil {
-			return nil, err
-		}
-
-	}
-
-	scanner.Beacons = make([]*Beacon, len(rows[1:]))
-	for i, b := range rows[1:] {
-		scanner.Beacons[i], err = ParseBeacon(b)
-		if err != nil {
-			return nil, fmt.Errorf("unable to parse beacon data: %s", b)
-		}
-	}
-
-	return scanner, nil
-
+	return math.Sqrt(xc + yc + zc)
 }
 
-func ParseBeacon(b []byte) (*Beacon, error) {
-	p := bytes.Split(b, []byte(","))
-	if len(p) != 3 {
-		return nil, fmt.Errorf("malformed beacon data: %s", b)
-	}
-
-	x, err := strconv.Atoi(string(p[0]))
-	if err != nil {
-		return nil, fmt.Errorf("unable to parse X from beacon row: %s", p)
-	}
-
-	y, err := strconv.Atoi(string(p[1]))
-	if err != nil {
-		return nil, fmt.Errorf("unable to parse Y from beacon row: %s", p)
-	}
-
-	z, err := strconv.Atoi(string(p[2]))
-	if err != nil {
-		return nil, fmt.Errorf("unable to parse Z from beacon row: %s", p)
-	}
-
-	return &Beacon{
-		X: x,
-		Y: y,
-		Z: z,
-	}, nil
-}
-
-func ReadScanners(filename string) ([]*Scanner, error) {
-	rawInput, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return nil, err
-	}
-
-	rawScannerText := bytes.Split(rawInput, []byte("\n\n"))
-	scanners := make([]*Scanner, len(rawScannerText))
-
-	for i, s := range rawScannerText {
-		scanners[i], err = ParseScanner(s)
-		if err != nil {
-			return nil, err
+func ScannerDist(s *Scanner) []float64 {
+	distDeltas := make([]float64, 0)
+	for i, b1 := range s.Beacons {
+		for _, b2 := range s.Beacons[i+1 : len(s.Beacons)] {
+			distDeltas = append(distDeltas, BeaconDist(b1, b2))
 		}
 	}
 
-	return scanners, nil
+	return distDeltas
+}
+
+func AreNeighborScanners(one, two *Scanner) bool {
+	oneDist := ScannerDist(one)
+	twoDist := ScannerDist(two)
+
+	dists := make(map[float64]int)
+	for _, d := range oneDist {
+		dists[d]++
+	}
+
+	for _, d := range twoDist {
+		dists[d]++
+	}
+
+	for k, v := range dists {
+		if v == 1 {
+			delete(dists, k)
+		}
+	}
+
+	fmt.Println(dists)
+	return true
 }
 
 func main() {
@@ -98,10 +63,12 @@ func main() {
 		panic(err)
 	}
 
-	for _, scanner := range scanners {
-		fmt.Printf("%+v\n", scanner)
-		for _, beacon := range scanner.Beacons {
-			fmt.Printf("%+v\n", beacon)
-		}
-	}
+	// for _, scanner := range scanners {
+	// 	fmt.Printf("%+v\n", scanner)
+	// 	for _, beacon := range scanner.Beacons {
+	// 		fmt.Printf("%+v\n", beacon)
+	// 	}
+	// }
+
+	AreNeighborScanners(scanners[0], scanners[5])
 }
