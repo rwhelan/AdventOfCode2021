@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"math"
 )
 
@@ -13,6 +12,25 @@ type Scanner struct {
 	X, Y, Z int
 	ID      int
 	Beacons []*Beacon
+}
+
+func (s Scanner) Clone() Scanner {
+	b := make([]*Beacon, len(s.Beacons))
+	for i, beacon := range s.Beacons {
+		b[i] = &Beacon{
+			X: beacon.X,
+			Y: beacon.Y,
+			Z: beacon.Z,
+		}
+	}
+
+	return Scanner{
+		X:       s.X,
+		Y:       s.Y,
+		Z:       s.Z,
+		ID:      s.ID,
+		Beacons: b,
+	}
 }
 
 func BeaconDist(one, two *Beacon) float64 {
@@ -53,8 +71,7 @@ func AreNeighborScanners(one, two *Scanner) bool {
 		}
 	}
 
-	fmt.Println(dists)
-	return true
+	return len(dists) >= 12
 }
 
 func main() {
@@ -70,5 +87,5 @@ func main() {
 	// 	}
 	// }
 
-	AreNeighborScanners(scanners[0], scanners[5])
+	AreNeighborScanners(scanners[0], scanners[3])
 }
