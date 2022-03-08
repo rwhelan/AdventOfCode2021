@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math"
 )
 
@@ -71,7 +72,7 @@ func AreNeighborScanners(one, two *Scanner) bool {
 		}
 	}
 
-	return len(dists) >= 12
+	return len(dists) >= 66
 }
 
 func main() {
@@ -80,12 +81,13 @@ func main() {
 		panic(err)
 	}
 
-	// for _, scanner := range scanners {
-	// 	fmt.Printf("%+v\n", scanner)
-	// 	for _, beacon := range scanner.Beacons {
-	// 		fmt.Printf("%+v\n", beacon)
-	// 	}
-	// }
+	for i, scanner := range scanners {
+		for _, scanner2 := range scanners[i:len(scanners)] {
+			if scanner.ID != scanner2.ID && AreNeighborScanners(scanner, scanner2) {
+				fmt.Println(scanner.ID, " - ", scanner2.ID)
+			}
+		}
+	}
 
 	AreNeighborScanners(scanners[0], scanners[3])
 }
