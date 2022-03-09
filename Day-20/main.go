@@ -17,6 +17,24 @@ type Pixel struct {
 type row map[int]Pixel
 type Image map[int]row
 
+// func (img Image) Process(key LookupKey) Image {
+// 	minX, maxX, minY, maxY := img.dimensions()
+
+// }
+
+func (img Image) PixelValue(X, Y int) int {
+
+}
+
+func (img *Image) AddPixel(X, Y int, IsLit bool) {
+	_, ok := (*img)[Y]
+	if !ok {
+		(*img)[Y] = make(row)
+	}
+
+	(*img)[Y][X] = Pixel{X: X, Y: Y, IsLit: IsLit}
+}
+
 func (img *Image) Print() string {
 	resp := strings.Builder{}
 
